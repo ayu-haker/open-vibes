@@ -21,7 +21,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
-    private lateinit var adManager: AdManager
     private lateinit var nativePlayer: NativePlayer
     private var pendingCommand: String? = null
 
@@ -51,7 +50,6 @@ class MainActivity : AppCompatActivity() {
 
         webView = findViewById(R.id.webView)
         progressBar = findViewById(R.id.progressBar)
-        adManager = AdManager(this)
 
         webView.settings.apply {
             javaScriptEnabled = true
@@ -89,45 +87,6 @@ class MainActivity : AppCompatActivity() {
 
         val networkBridge = NetworkBridge { webView }
         webView.addJavascriptInterface(networkBridge, "NetBridge")
-
-        webView.addJavascriptInterface(object {
-            @JavascriptInterface
-            fun showBanner() {
-                adManager.showBanner()
-                runOnUiThread {
-                    webView.evaluateJavascript("if(typeof onAdBannerShown==='function') onAdBannerShown()", null)
-                }
-            }
-
-            @JavascriptInterface
-            fun hideBanner() {
-                adManager.hideBanner()
-                runOnUiThread {
-                    webView.evaluateJavascript("if(typeof onAdBannerHidden==='function') onAdBannerHidden()", null)
-                }
-            }
-
-            @JavascriptInterface
-            fun showInterstitial() {
-                adManager.triggerInterstitial()
-                runOnUiThread {
-                    webView.evaluateJavascript("if(typeof onAdInterstitialShown==='function') onAdInterstitialShown()", null)
-                }
-            }
-
-            @JavascriptInterface
-            fun dismissInterstitial() {
-                adManager.dismissInterstitial()
-                runOnUiThread {
-                    webView.evaluateJavascript("if(typeof onAdInterstitialDismissed==='function') onAdInterstitialDismissed()", null)
-                }
-            }
-
-            @JavascriptInterface
-            fun auditCheck(): String {
-                return AdAuditLog.getLog()
-            }
-        }, "AdBridge")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(

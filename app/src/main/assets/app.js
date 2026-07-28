@@ -406,15 +406,6 @@ function showTab(name) {
   if (name === 'library') renderLibrary(S.libTab);
   if (name === 'settings') loadSettingsUI();
   if (name === 'home') updateGreeting();
-  tryAdBreakpoint();
-}
-
-var _navCount = 0;
-function tryAdBreakpoint() {
-  _navCount++;
-  if (_navCount % 5 === 0 && window.AdBridge) {
-    try { AdBridge.showInterstitial(); } catch (e) {}
-  }
 }
 
 function updateGreeting() {
@@ -1970,46 +1961,8 @@ function notifyNative(action, data) {
   } catch (e) {}
 }
 
-/* ===== AD SAFEGUARDS ===== */
-var _adState = { showing: false, type: null, wasPlayingBefore: false };
-
-function onAdBannerShown() {
-  _adState = { showing: true, type: 'banner', wasPlayingBefore: S.playing };
-  console.log('[AdSafeguard] Banner shown, player was playing: ' + S.playing);
-  if (NativeBridge) NativeBridge.logAdEvent('banner', 'shown');
-}
-
-function onAdBannerHidden() {
-  _adState = { showing: false, type: null, wasPlayingBefore: false };
-  console.log('[AdSafeguard] Banner hidden');
-  if (NativeBridge) NativeBridge.logAdEvent('banner', 'hidden');
-}
-
-function onAdInterstitialShown() {
-  _adState = { showing: true, type: 'interstitial', wasPlayingBefore: S.playing };
-  console.log('[AdSafeguard] Interstitial shown, player was playing: ' + S.playing);
-  if (NativeBridge) NativeBridge.logAdEvent('interstitial', 'shown');
-}
-
-function onAdInterstitialDismissed() {
-  console.log('[AdSafeguard] Interstitial dismissed, player state: ' + S.playing);
-  if (NativeBridge) NativeBridge.logAdEvent('interstitial', 'dismissed');
-  _adState = { showing: false, type: null, wasPlayingBefore: false };
-}
-
-function assertPlaybackUninterrupted() {
-  if (_adState.showing && _adState.wasPlayingBefore && !S.playing) {
-    console.error('[AdSafeguard] VIOLATION: Player was playing before ad but is now paused during ad!');
-    if (NativeBridge) NativeBridge.logAdEvent('violation', 'playback_interrupted');
-  }
-}
-setInterval(assertPlaybackUninterrupted, 500);
-
 /* ===== handleBack for Android ===== */
 function handleBack() {
-  if (_adState.showing && _adState.type === 'interstitial') {
-    return 'true';
-  }
   return 'false';
 }
 
